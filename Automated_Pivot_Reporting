@@ -1,0 +1,69 @@
+import pandas as pd
+
+import openpyxl
+
+from openpyxl import load_workbook
+
+from openpyxl.styles import Font
+
+from openpyxl.chart import BarChart, Reference
+
+ 
+
+fileLoc = "productionreport.xlsx"
+
+pivotLoc = "productionreport_pivot.xlsx"
+
+ 
+
+#open Excel file
+
+excel_file = pd.read_excel(fileLoc)
+
+ 
+
+#create pivot table
+
+report_table = excel_file.pivot_table(
+
+    index='JDA Symptom',
+
+    columns='Line',
+
+    values='displayresult',
+
+    aggfunc='count'
+
+)
+
+ 
+
+#add grand total column
+
+#   (this assumes only line2 and line3 are columns. in the future might want to use a loop to iterate over
+
+#   all available cols to ensure they are all totalled correctly)
+
+sum_col = report_table['line2'] + report_table['line3']
+
+report_table['Grand total'] = sum_col
+
+ 
+
+#add grand total row
+
+sum_row = report_table.sum()
+
+print(sum_row)
+
+sum_row["Line"] = "Grand total"
+
+report_table.loc[len(report_table.index)] = sum_row
+
+ 
+
+#export table
+
+report_table.to_excel(pivotLoc)
+
+print("Pivot table exported to " + pivotLoc)
